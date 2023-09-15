@@ -45,7 +45,7 @@ class TicketDaoTest {
     }
 
     @BeforeEach
-    void setUp() throws SQLException {
+    void setUp() {
         flightDao = FlightDao.getInstance();
         ticketDao = TicketDao.getInstance();
         connection = ConnectionManager.open();

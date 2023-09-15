@@ -73,7 +73,6 @@ public class TicketDao implements Dao<Long, Ticket> {
              var statement =
                      connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
             setTicketIntoStatement(ticket, statement);
-            ticket.flight().id();
             statement.executeUpdate();
             var keys = statement.getGeneratedKeys();
             long id = 0;
