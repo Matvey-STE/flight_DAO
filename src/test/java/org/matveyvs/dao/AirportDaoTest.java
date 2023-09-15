@@ -24,7 +24,7 @@ class AirportDaoTest {
             """;
 
     @BeforeEach
-    void setUp() throws SQLException {
+    void setUp(){
         airportDao = AirportDao.getInstance();
         connection = ConnectionManager.open();
     }

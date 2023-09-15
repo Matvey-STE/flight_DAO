@@ -30,7 +30,7 @@ class AircraftDaoTest {
     }
 
     @BeforeEach
-    void setUp() throws SQLException {
+    void setUp() {
         aircraftDao = AircraftDao.getInstance();
         connection = ConnectionManager.open();
 

@@ -3,7 +3,6 @@ package org.matveyvs.dao;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.matveyvs.entity.Airport;
 import org.matveyvs.entity.Seat;
 import org.matveyvs.utils.ConnectionManager;
 
