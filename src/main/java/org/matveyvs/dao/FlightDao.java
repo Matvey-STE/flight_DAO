@@ -87,8 +87,8 @@ public class FlightDao implements Dao<Long, Flight> {
 
     @Override
     public Optional<Flight> findById(Long id) {
-        try (var connectino = ConnectionManager.open()) {
-            return findById(id, connectino);
+        try (var connection = ConnectionManager.open()) {
+            return findById(id, connection);
         } catch (SQLException e) {
             throw new DaoException(e);
         }
