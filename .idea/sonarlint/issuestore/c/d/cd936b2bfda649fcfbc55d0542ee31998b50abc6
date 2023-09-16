@@ -1,0 +1,7 @@
+
+n
+java:S11922"LDefine a constant instead of duplicating this literal "aircraft_id" 5 times.(Ñİè‚úÿÿÿÿ8î•õš©1
+j
+java:S11923"HDefine a constant instead of duplicating this literal "seat_no" 5 times.(íÕïİûÿÿÿÿ8î•õš©1
+¶
+java:S6548"˜A Singleton implementation was detected. Make sure the use of the Singleton pattern is required and the implementation is the right one for the context.(Ê–‘Ñ8ƒ–õš©1

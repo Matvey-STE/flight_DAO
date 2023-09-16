@@ -9,6 +9,7 @@ public class PropertiesUtil {
 
     static {
         loadProperties();
+
     }
 
     private static void loadProperties() {

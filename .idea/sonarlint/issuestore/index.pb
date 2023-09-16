@@ -1,8 +1,6 @@
 
 W
 'src/main/java/org/matveyvs/Dao/Dao.java,a/c/aca5256a51d382a73d031800f155667b12894da3
-d
-4src/main/java/org/matveyvs/utils/PropertiesUtil.java,0/9/09eb6597eb927b3171ac6de16c1903ae7fc3ae57
 f
 6src/main/java/org/matveyvs/exception/DaoException.java,5/3/539efb7e91298ef3c88e16fd5ad996e3ccd9b837
 c
@@ -21,12 +19,8 @@ _
 -src/main/java/org/matveyvs/entity/Ticket.java,7/0/70b697ac91fc332b02191bb0532641af817c267a
 f
 6src/main/java/org/matveyvs/entity/PassengerTicket.java,6/6/6690dab6f39f7b78e67e7bbf4ec72caffe7f4162
-a
-1src/test/java/org/matveyvs/dao/TicketDaoTest.java,7/3/73cb76ff011fbdb07e046d237cbf6f9d09cc4ea4
 _
 /src/test/java/org/matveyvs/dao/SeatDaoTest.java,b/2/b2c1cbb89a33c8ae13060078d6eabe51d009a05b
-Z
-*src/main/java/org/matveyvs/JdbcRunner.java,f/9/f93984300a776452f8f173c088cc3137099a34dc
 W
 'src/main/java/org/matveyvs/dao/Dao.java,a/4/a4888272f9cff5106dc1bb2c405cff8b01cead88
 ^

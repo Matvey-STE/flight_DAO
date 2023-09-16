@@ -10,6 +10,18 @@ public class ConnectionManager {
     private static final String URL_PASSWORD = "postgres.password";
     private static final String URL_DRIVER = "postgres.driver";
 
+    static {
+        loadDriver();
+    }
+
+    private static void loadDriver() {
+        try {
+            Class.forName(PropertiesUtil.get(URL_DRIVER));
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static Connection open() {
         try {
             return DriverManager.getConnection(
