@@ -1,4 +1,4 @@
-package org.matveyvs.service;
+package org.matveyvs.servlet;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
