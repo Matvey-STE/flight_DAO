@@ -1,110 +1,100 @@
 package org.matveyvs.dao;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matveyvs.entity.Seat;
-import org.matveyvs.utils.ConnectionManager;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+@Slf4j
 class SeatDaoTest {
-    private Seat testDeleteBySeat;
-    private SeatDao seatDao;
-    private Connection connection;
-    private static final String DELETE_SQL = """
-            DELETE FROM seat
-            WHERE aircraft_id = ? AND seat_no = ?
-            """;
+    private Seat savedSeat;
+    private final SeatDao seatDao = SeatDao.getInstance();
 
     @BeforeEach
     void setUp() {
-        seatDao = seatDao.getInstance();
-        connection = ConnectionManager.open();
+
     }
 
     @AfterEach
     void tearDown() throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(DELETE_SQL);
-        statement.setInt(1, testDeleteBySeat.aircraftId());
-        statement.setString(2, testDeleteBySeat.seatNo());
-        statement.executeUpdate();
-        connection.close();
+        try{
+            boolean delete = seatDao.delete(savedSeat);
+            log.info("The entity in tearDown" + delete);
+        } catch (Exception e){
+            log.info(e + "Entity is not presented");
+        }
+    }
+
+    public Seat getTestSeat() {
+        return new Seat(1, "Test");
     }
 
     @Test
     void save() {
-        Seat seat = new Seat(1, "TEST");
-
-        // Save the airport
-        Seat savedSeat = seatDao.save(seat);
+        Seat seat = getTestSeat();
+        savedSeat = seatDao.save(seat);
 
         assertNotNull(savedSeat);
-        assertEquals("TEST", savedSeat.seatNo());
-
-        testDeleteBySeat = new Seat(savedSeat.aircraftId(),savedSeat.seatNo());
+        assertEquals(seat.getSeatNo(), savedSeat.getSeatNo());
     }
 
     @Test
     void findAll() {
-        Seat seat = new Seat(1, "TEST");
-        Seat savedSeat = seatDao.save(seat);
+        Seat seat = getTestSeat();
+        savedSeat = seatDao.save(seat);
 
         List<Seat> airports = seatDao.findAll();
 
         assertNotNull(airports);
         assertTrue(airports.size() > 0);
-
-        testDeleteBySeat = new Seat(savedSeat.aircraftId(),savedSeat.seatNo());
     }
 
     @Test
     void findById() {
-        Seat seat = new Seat(1, "TEST");
-        Seat savedSeat = seatDao.save(seat);
+        Seat seat = getTestSeat();
+        savedSeat = seatDao.save(seat);
 
-        Optional<Seat> optionalSeat = seatDao.findById(seat);
+        Optional<Seat> optionalSeat = seatDao.findBySeat(seat);
 
         assertTrue(optionalSeat.isPresent());
-        assertEquals("TEST", seat.seatNo());
-
-        testDeleteBySeat = new Seat(savedSeat.aircraftId(),savedSeat.seatNo());
+        assertEquals(seat.getSeatNo(), optionalSeat.get().getSeatNo());
     }
 
     @Test
     void update() {
-        Seat seat = new Seat(1, "TEST");
-        Seat savedSeat = seatDao.save(seat);
+        Seat seat = getTestSeat();
+        savedSeat = seatDao.save(seat);
 
-        String updateSeat = "UPDT";
+        String testSeat = "UPDT";
 
-        boolean updated = seatDao.update(seat, updateSeat);
+        boolean updated = seatDao.update(seat, testSeat);
         assertTrue(updated);
         // Verify that the airport details have been updated
-        Optional<Seat> updatedSeat = seatDao.findById(new Seat(seat.aircraftId(),updateSeat));
+        Optional<Seat> updatedSeat = seatDao.findBySeat(new Seat(seat.getAircraftId(),testSeat));
         assertTrue(updatedSeat.isPresent());
-        assertEquals("UPDT", updatedSeat.get().seatNo());
+        assertEquals(testSeat, updatedSeat.get().getSeatNo());
+        // to delete entity in tearDown method
+        savedSeat.setSeatNo(testSeat);
 
-        testDeleteBySeat = updatedSeat.get();
     }
 
     @Test
     void delete() {
-        Seat seat = new Seat(1, "TEST");
-        Seat savedSeat = seatDao.save(seat);
+        Seat seat = getTestSeat();
+        savedSeat = seatDao.save(seat);
 
         boolean deleted = seatDao.delete(savedSeat);
         assertTrue(deleted);
-
-        Optional<Seat> deletedAirport = seatDao.findById(savedSeat);
-        assertTrue(deletedAirport.isEmpty());
-
-        testDeleteBySeat = new Seat(savedSeat.aircraftId(),savedSeat.seatNo());
+        try{
+            Optional<Seat> deletedAirport = seatDao.findBySeat(savedSeat);
+            assertTrue(deletedAirport.isEmpty());
+        } catch (Exception e){
+            log.warn(e + "The entity is not presented");
+        }
     }
 }

@@ -13,7 +13,6 @@ import java.util.Arrays;
 @WebServlet("/cookies")
 public class CookieServlet extends HttpServlet {
     private static final String UNIQ_USER = "userId";
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         var cookies = req.getCookies();

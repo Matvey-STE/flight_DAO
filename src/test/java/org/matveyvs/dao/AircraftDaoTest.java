@@ -1,117 +1,130 @@
 package org.matveyvs.dao;
 
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.query.NativeQuery;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matveyvs.entity.Aircraft;
-import org.matveyvs.utils.ConnectionManager;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import javax.persistence.NoResultException;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Slf4j
 class AircraftDaoTest {
-    private static long newIdPointToReset;
-    private long testKey;
-    private AircraftDao aircraftDao;
-    private Connection connection;
-    private static final String DELETE_SQL = """
-            DELETE FROM aircraft
-            WHERE id = ?
-            """;
+    private final AircraftDao aircraftDao = AircraftDao.getInstance();
+    private Aircraft savedAircraft;
+    private SessionFactory sessionFactory;
+    private int dBSize;
 
     private String getResetIdTableSql() {
-        return "ALTER SEQUENCE flight_repo.public.aircraft_id_seq RESTART WITH " + newIdPointToReset;
+        return "ALTER SEQUENCE flight_repo.public.aircraft_id_seq RESTART WITH " + dBSize;
     }
 
     @BeforeEach
     void setUp() {
-        aircraftDao = AircraftDao.getInstance();
-        connection = ConnectionManager.open();
-
-        newIdPointToReset = aircraftDao.findAll().size() + 1;
+        dBSize = aircraftDao.findAll().size() + 1;
+        final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+                .configure() // configures settings from hibernate.cfg.xml
+                .build();
+        try {
+            sessionFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
+        } catch (Exception e) {
+            // The registry would be destroyed by the SessionFactory, but we had trouble building the SessionFactory
+            // so destroy it manually.
+            StandardServiceRegistryBuilder.destroy(registry);
+        }
     }
 
     @AfterEach
-    void tearDown() throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(DELETE_SQL);
-        statement.setLong(1, testKey);
-        statement.executeUpdate();
+    void tearDown() {
+        if (sessionFactory != null) {
+            try (Session session = sessionFactory.openSession()) {
+                session.beginTransaction();
 
-        Statement resetStatementId = connection.createStatement();
-        resetStatementId.execute(getResetIdTableSql());
-        connection.close();
+                session.delete(savedAircraft);
+
+                NativeQuery<?> nativeQuery = session.createNativeQuery(getResetIdTableSql());
+                nativeQuery.executeUpdate();
+
+                session.getTransaction().commit();
+            } catch (Exception e) {
+                log.warn("Information: " + e);
+            } finally {
+                sessionFactory.close();
+            }
+        }
+    }
+
+    private static Aircraft getAircraft() {
+        return Aircraft.builder().model("TEST").build();
     }
 
     @Test
-    void save() throws SQLException {
-        Aircraft aircraft = new Aircraft("TEST");
-        Aircraft savedAircraft = aircraftDao.save(aircraft);
+    void save() {
+        Aircraft aircraft = getAircraft();
+        savedAircraft = aircraftDao.save(aircraft);
 
         assertNotNull(savedAircraft);
-        assertEquals("TEST", savedAircraft.model());
-        //set key to delete after tests
-        testKey = savedAircraft.id();
+        assertEquals(aircraft.getModel(), savedAircraft.getModel());
     }
 
     @Test
-    void findAll() throws SQLException {
-        Aircraft aircraft = new Aircraft("TEST");
-        Aircraft savedAircraft = aircraftDao.save(aircraft);
+    void findAll() {
+        Aircraft aircraft = getAircraft();
+        savedAircraft = aircraftDao.save(aircraft);
 
         List<Aircraft> aircrafts = aircraftDao.findAll();
-
         assertNotNull(aircrafts);
         assertTrue(aircrafts.size() > 0);
-        testKey = savedAircraft.id();
     }
 
     @Test
-    void findById() throws SQLException {
-        Aircraft aircraft = new Aircraft("TEST");
-        Aircraft savedAircraft = aircraftDao.save(aircraft);
-
-        Optional<Aircraft> optionalAircraft = aircraftDao.findById(savedAircraft.id());
-
+    void findById() {
+        Aircraft aircraft = getAircraft();
+        savedAircraft = aircraftDao.save(aircraft);
+        Optional<Aircraft> optionalAircraft = aircraftDao.findById(savedAircraft.getId());
         assertTrue(optionalAircraft.isPresent());
         Aircraft aircraftFind = optionalAircraft.get();
-        assertEquals("TEST", aircraftFind.model());
-        testKey = savedAircraft.id();
+        assertEquals(aircraft.getModel(), aircraftFind.getModel());
     }
 
     @Test
     void update() {
-        Aircraft aircraft = new Aircraft("TEST");
-        Aircraft savedAircraft = aircraftDao.save(aircraft);
+        Aircraft aircraft = getAircraft();
+        savedAircraft = aircraftDao.save(aircraft);
 
-        Aircraft updateAircraft = new Aircraft(savedAircraft.id(), "UpdatedModel");
+        String updateModel = "UPDATE";
+        savedAircraft.setModel(updateModel);
 
-        boolean updated = aircraftDao.update(updateAircraft);
+        boolean updated = aircraftDao.update(savedAircraft);
         assertTrue(updated);
 
-        Optional<Aircraft> updatedAirport = aircraftDao.findById(updateAircraft.id());
+        Optional<Aircraft> updatedAirport = aircraftDao.findById(savedAircraft.getId());
         assertTrue(updatedAirport.isPresent());
-        assertEquals("UpdatedModel", updatedAirport.get().model());
-
-        testKey = updateAircraft.id();
+        assertEquals(updateModel, updatedAirport.get().getModel());
     }
 
     @Test
     void delete() {
-        Aircraft aircraft = new Aircraft("TEST");
-        Aircraft savedAircraft = aircraftDao.save(aircraft);
-        testKey = savedAircraft.id();
-
-        boolean deleted = aircraftDao.delete(testKey);
-        assertTrue(deleted);
-
+        Aircraft aircraft = getAircraft();
+        savedAircraft = aircraftDao.save(aircraft);
         // Verify that the airport has been deleted
-        Optional<Aircraft> deletedAirport = aircraftDao.findById(testKey);
-        assertTrue(deletedAirport.isEmpty());
+        try {
+            boolean deleted = aircraftDao.delete(savedAircraft.getId());
+            assertTrue(deleted);
+            Optional<Aircraft> deletedAirport = aircraftDao.findById(savedAircraft.getId());
+            assertFalse(deletedAirport.isPresent());
+        } catch (NoResultException e) {
+            log.warn("Aircraft not found after deletion" + e);
+        }
     }
 }

@@ -1,15 +1,11 @@
 package org.matveyvs;
 
-import org.matveyvs.dao.TicketDao;
+import lombok.extern.slf4j.Slf4j;
 
-import java.sql.SQLException;
-
+@Slf4j
 public class JdbcRunner {
-    public static void main(String[] args){
-        TicketDao ticketDao = TicketDao.getInstance();
-        System.out.println(ticketDao.passengerTickets(5));
-        System.out.println(ticketDao.mostFreqNames(5));
-        boolean test = ticketDao.updateTicketAndFlight(1L, "TEST2", "BSL");
-        System.out.println(test);
+    public static void main(String[] args) {
+
     }
 }
+

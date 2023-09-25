@@ -12,7 +12,7 @@ public class TicketService {
 
     public List<TicketDto> findAllByFlightId(Long id){
         return ticketDao.findAllByFlightId(id).stream().map(ticket ->
-                new TicketDto(ticket.id(), ticket.flight().id(),ticket.seatNo()))
+                new TicketDto(ticket.getId(), ticket.getFlight().getId(),ticket.getSeatNo()))
                 .collect(Collectors.toList());
     }
 
